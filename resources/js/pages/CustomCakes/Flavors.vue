@@ -62,42 +62,54 @@ onMounted(async () => await getData());
       </div>
 
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table
-          class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
-        >
-          <thead
-            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-          >
-            <tr>
-              <th scope="col" class="px-6 py-3">Custom Cake Flavor Name</th>
-              <th scope="col" class="px-6 py-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(item, index) in data"
-              :key="index"
-              class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
-            >
-              <th
-                scope="row"
-                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                {{ item.name }}
-              </th>
-             
+        <template v-if="loading">
+          <div class="animate-pulse">
+            <div class="h-8 bg-gray-200 mb-4"></div>
+            <div class="h-8 bg-gray-200 mb-4"></div>
+            <div class="h-8 bg-gray-200 mb-4"></div>
+            <div class="h-8 bg-gray-200 mb-4"></div>
+            <div class="h-8 bg-gray-200 mb-4"></div>
+            <div class="h-8 bg-gray-200 mb-4"></div>
+            <div class="h-8 bg-gray-200 mb-4"></div>
+          </div>
+        </template>
 
-              <td class="px-6 py-4">
-                <button
-                  @click="deleteData(item.id)"
-                  class="text-red-500 hover:text-red-700"
+        <template v-else>
+          <table
+            class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+          >
+            <thead
+              class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+            >
+              <tr>
+                <th scope="col" class="px-6 py-3">Custom Cake Flavor Name</th>
+                <th scope="col" class="px-6 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, index) in data"
+                :key="index"
+                class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
+              >
+                <th
+                  scope="row"
+                  class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <i class="fa fa-trash" aria-hidden="true"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                  {{ item.name }}
+                </th>
+                <td class="px-6 py-4">
+                  <button
+                    @click="deleteData(item.id)"
+                    class="text-red-500 hover:text-red-700"
+                  >
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
       </div>
     </div>
   </AppLayout>

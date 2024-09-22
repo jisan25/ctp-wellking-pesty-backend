@@ -30,7 +30,7 @@ class ProductController extends Controller
             ->with(['category:id,name'])
             ->withCount('orderDetails')
             ->orderByDesc('order_details_count')
-            ->when($request->input('category'), function ($query, $search){
+            ->when($request->input('category'), function ($query, $search) {
                 $query->whereIn('category_id', [$search]);
             })
             ->when($title, function ($query, $title) {
@@ -38,16 +38,16 @@ class ProductController extends Controller
             })
             ->when($date, function ($query, $date) {
                 return $query->whereDate('created_at', $date);
-            })->when($price_from || $price_to, function ($q, $vp){
-                  $q->whereHas('prices', function ($q) use ($vp) {
-                      $price_from = $vp[0];
-                      $price_to = $vp[1];
-                      $q->when($price_from, function ($query, $price_from) {
-                          return $query->where('price', '>=', intval($price_from));
-                      })->when($price_to, function ($query, $price_to) {
-                          return $query->where('price', '<=', intval($price_to));
-                      });
-                  });
+            })->when($price_from || $price_to, function ($q, $vp) {
+                $q->whereHas('prices', function ($q) use ($vp) {
+                    $price_from = $vp[0];
+                    $price_to = $vp[1];
+                    $q->when($price_from, function ($query, $price_from) {
+                        return $query->where('price', '>=', intval($price_from));
+                    })->when($price_to, function ($query, $price_to) {
+                        return $query->where('price', '<=', intval($price_to));
+                    });
+                });
             })->paginate(20);
 
 
@@ -58,24 +58,26 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|max:255',
-            'price'  => 'nullable|integer',
+            'price' => 'nullable|integer',
             'category_id' => 'required|exists:categories,id',
             'sku' => 'nullable',
             'stock' => 'required|integer',
             'about' => 'nullable|max:400',
-//            'location_id' => 'required|exists:locations,id',
-            'details'=> 'nullable',
+            //            'location_id' => 'required|exists:locations,id',
+            'details' => 'nullable',
             'cover_image' => 'required|max:1024|mimes:svg,png,jpg,jpeg,gif'
         ]);
 
 
-        if($request->hasFile('cover_image')) $cover = $request->file('cover_image')->store('uploads');
+        if ($request->hasFile('cover_image'))
+            $cover = $request->file('cover_image')->store('uploads');
 
-//        $data['images'] = json_encode($imageData);
+        //        $data['images'] = json_encode($imageData);
 
         $data['cover_image'] = $cover;
+        $data['video_url'] = $request->video_url;
         $data['sku'] = $request->input('sku') ?? rand(11111, 99999);
-        if($request->input('variants')){
+        if ($request->input('variants')) {
             $data['variant'] = json_encode($request->input('variants'));
         }
 
@@ -85,7 +87,7 @@ class ProductController extends Controller
         $imageData = [];
         if ($request->file('images')) {
             $images = $request->file('images');
-            foreach( $images as $image){
+            foreach ($images as $image) {
                 $imageData[] = [
                     'product_id' => $product->id,
                     'url' => $image['file']->store('uploads')
@@ -105,8 +107,6 @@ class ProductController extends Controller
         $product = Product::query()->with('category')->findOrFail($id);
         return response()->json($product);
     }
-
-
 
 
     public function variant_price(Request $request)
@@ -151,19 +151,20 @@ class ProductController extends Controller
 
         $data = $request->validate([
             'title' => 'required|max:255',
-            'price'  => 'nullable|integer',
+            'price' => 'nullable|integer',
             'category_id' => 'required|exists:categories,id',
             'sku' => 'nullable',
             'about' => 'nullable|max:400',
-            'details'=> 'nullable',
+            'details' => 'nullable',
         ]);
 
         $product = Product::findOrFail($request->input('id'));
 
-        if($request->hasFile('cover_image'))  $data['cover_image'] = $request->file('cover_image')->store('uploads');
+        if ($request->hasFile('cover_image'))
+            $data['cover_image'] = $request->file('cover_image')->store('uploads');
 
         $data['sku'] = $request->input('sku') ?? rand(11111, 99999);
-        if($request->input('variants')){
+        if ($request->input('variants')) {
             $data['variant'] = json_encode($request->input('variants'));
         }
 
@@ -172,7 +173,7 @@ class ProductController extends Controller
         $imageData = [];
         if ($request->file('images')) {
             $images = $request->file('images');
-            foreach( $images as $image){
+            foreach ($images as $image) {
                 $imageData[] = [
                     'product_id' => $product->id,
                     'url' => $image['file']->store('uploads')
@@ -181,7 +182,7 @@ class ProductController extends Controller
         }
 
         $product->update($data);
-        if(count($imageData)){
+        if (count($imageData)) {
             $product->images()->insert($imageData);
         }
 
@@ -212,16 +213,16 @@ class ProductController extends Controller
             $variationMake = [];
             $variationIds = explode('/', $variation["variationId"], '-1');
             foreach ($variationIds as $singleVariation) {
-                $variationMake[] = ['variant_id' =>intval($singleVariation)];
+                $variationMake[] = ['variant_id' => intval($singleVariation)];
             }
 
             $variationOptions[] = [
                 'variationId' => $variationIds,
                 'variationOpId' => $variation["variationOptionId"],
                 'price' => $variation["price"],
-                'stock' =>$variation["stock"],
-                'sku' =>$variation["sku"],
-            ] ;
+                'stock' => $variation["stock"],
+                'sku' => $variation["sku"],
+            ];
         }
         $newArray = [];
         foreach ($variationOptions as $item) {
@@ -242,7 +243,7 @@ class ProductController extends Controller
 
         return $product->load(['product_variants', 'productVariationOptions:id,pivot']);
 
-//        $optionValidForSave = [];
+        //        $optionValidForSave = [];
 //        foreach ($variationOptions as $key => $opItem){
 //            $vId = $opItem["variationId"][$key];
 //            foreach (explode('/', $opItem["variationOpId"], '-1') as $item){
@@ -366,7 +367,7 @@ class ProductController extends Controller
 
     public function saveProductDetails(Request $request)
     {
-        $data  = $request->validate([
+        $data = $request->validate([
             'productName' => 'required',
             'categoryId' => 'required',
             'brandId' => 'nullable',
@@ -402,10 +403,10 @@ class ProductController extends Controller
         $product->variationOptions = json_encode($request->varArray);
         $product->save();
 
-        $array =  collect($request->variations)->map(function($item){
+        $array = collect($request->variations)->map(function ($item) {
             $item['product_id'] = 1;
             $item['varient'] = $item['title'];
-            $item['sku'] =  $item['sku'] ?? getRandomStringRand();
+            $item['sku'] = $item['sku'] ?? getRandomStringRand();
             $item['qty'] = $item['stock'];
             return $item;
         });
@@ -447,7 +448,8 @@ class ProductController extends Controller
 
     }
 
-    public function saveProductImages(Request $request){
+    public function saveProductImages(Request $request)
+    {
 
         $product = Product::findOrFail($request->input('productId'));
         $images = $request->file('files');
@@ -464,7 +466,7 @@ class ProductController extends Controller
             ];
         }
 
-//        return $uploadedFiles;
+        //        return $uploadedFiles;
 
         $product->images()->createMany($uploadedFiles);
 
@@ -474,7 +476,7 @@ class ProductController extends Controller
 
     public function variationsProducts()
     {
-//        return Product::query()->with(['images', 'stocks'])->get()->map(function ($product) {
+        //        return Product::query()->with(['images', 'stocks'])->get()->map(function ($product) {
 //            $product->images->each(function ($image) {
 //                $image->url = Storage::url("uploads/$image->image");
 //            });
@@ -497,7 +499,8 @@ class ProductController extends Controller
     }
 
 
-    public function updateStoke(Request $request, $id){
+    public function updateStoke(Request $request, $id)
+    {
         $stoke = ProductStock::query()->findOrFail($id);
 
         $stoke->qty += $request->input("qty");
@@ -513,7 +516,7 @@ class ProductController extends Controller
     {
         $stokes = ProductStock::query()->with(['product.category', 'product.images'])->get();
         $stokes->each(function ($stock) {
-            if($stock->product->images && !empty($stock->product->images)){
+            if ($stock->product->images && !empty($stock->product->images)) {
                 $stock->product->images->each(function ($image) {
                     $image->url = Storage::url("uploads/$image->image");
                 });
@@ -524,33 +527,34 @@ class ProductController extends Controller
     }
 
 
-    public function filterProduct(Request $request){
+    public function filterProduct(Request $request)
+    {
 
         $products = Product::query()
             ->with(['images:id,product_id,image', 'stocks:id,product_id,varient,price', 'category'])
-            ->when(\Illuminate\Support\Facades\Request::input('category'), function ($query, $search){
-                $query->whereHas('category', function ($query)use($search){
+            ->when(\Illuminate\Support\Facades\Request::input('category'), function ($query, $search) {
+                $query->whereHas('category', function ($query) use ($search) {
                     $query->whereIn('id', $search);
                 });
             })
-            ->when(\Illuminate\Support\Facades\Request::input('priceRange'), function ($query, $search){
+            ->when(\Illuminate\Support\Facades\Request::input('priceRange'), function ($query, $search) {
                 $query->whereBetween('price', [$search['min'], $search['max']]);
             })
             ->when(\Illuminate\Support\Facades\Request::input('orderBy'), function ($query, $search) {
-                if ($search === 'price_low_high'){
+                if ($search === 'price_low_high') {
                     $query->orderBy('price', 'asc');
                 }
-                if ($search === 'price_high_low'){
+                if ($search === 'price_high_low') {
                     $query->orderBy('price', 'desc');
                 }
-                if ($search === 'newest_first'){
+                if ($search === 'newest_first') {
                     $query->orderBy('created_at', 'desc');
                 }
-                if ($search === 'oldest_first'){
+                if ($search === 'oldest_first') {
                     $query->orderBy('created_at', 'asc');
                 }
             })
-            ->when(\Illuminate\Support\Facades\Request::input('search'), function ($query, $search){
+            ->when(\Illuminate\Support\Facades\Request::input('search'), function ($query, $search) {
                 $query->where('title', 'like', "%{$search}%");
             })
             ->select(['id', 'title'])
@@ -563,7 +567,7 @@ class ProductController extends Controller
 
 
 
-//        $products = Product::with(['images', 'stocks', 'category'])
+        //        $products = Product::with(['images', 'stocks', 'category'])
 //        ->when($request->input('category'), function($query, $search){
 //            $query->where('category_id', $search);
 //        })
@@ -587,10 +591,11 @@ class ProductController extends Controller
     }
 
 
-    public function deleteProductImage($id){
+    public function deleteProductImage($id)
+    {
         $image = ProductImage::findOrFail($id);
 
-        if(Storage::disk('public')->exists("uploads/$image->image")){
+        if (Storage::disk('public')->exists("uploads/$image->image")) {
             Storage::disk('public')->delete("uploads/$image->image");
         }
 
@@ -599,7 +604,8 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product Image Deleted.....'], 200);
     }
 
-    public function deleteStoke($id){
+    public function deleteStoke($id)
+    {
         $stoke = ProductStock::findOrFail($id);
         $stoke->delete();
 

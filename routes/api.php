@@ -1,32 +1,34 @@
 <?php
 
-use App\Http\Controllers\Api\Frontend\V1\CustomerOrderController;
-use App\Http\Controllers\Api\Frontend\V1\GetInTouchController;
-use App\Http\Controllers\Api\V1\AddressController;
-use App\Http\Controllers\Api\Frontend\V1\HomeController;
-use App\Http\Controllers\Api\Frontend\V1\ProductController as FrontendProductController;
-use App\Http\Controllers\Api\Frontend\V1\CustomerController as FrontendCustomerController;
-use App\Http\Controllers\Api\V1\BrandController;
-use App\Http\Controllers\Api\V1\BusinessSettingController;
-use App\Http\Controllers\Api\V1\CategoryController;
-use App\Http\Controllers\Api\V1\CompanyServiceController;
-use App\Http\Controllers\Api\V1\CustomCakeController;
-use App\Http\Controllers\Api\V1\CustomCakeFlavorController;
-use App\Http\Controllers\Api\V1\CustomerController;
-use App\Http\Controllers\Api\V1\DashboardController;
-use App\Http\Controllers\Api\V1\LocationController;
-use App\Http\Controllers\Api\V1\OrderAreaController;
-use App\Http\Controllers\Api\V1\OrderController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\PageController;
-use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\BrandController;
+use App\Http\Controllers\Api\V1\ImageController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\SliderController;
+use App\Http\Controllers\Api\V1\AddressController;
+use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\LocationController;
+use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\OrderAreaController;
+use App\Http\Controllers\Api\V1\CustomCakeController;
 use App\Http\Controllers\Api\v1\TestimonialController;
+use App\Http\Controllers\Api\Frontend\V1\HomeController;
+use App\Http\Controllers\Api\V1\CompanyServiceController;
+use App\Http\Controllers\Api\V1\BusinessSettingController;
+use App\Http\Controllers\Api\V1\CustomCakeOrderController;
+use App\Http\Controllers\Auth\Customer\RegisterController;
+use App\Http\Controllers\Api\V1\CustomCakeFlavorController;
+use App\Http\Controllers\Api\Frontend\V1\GetInTouchController;
+use App\Http\Controllers\Api\Frontend\V1\CustomerOrderController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Auth\Customer\LoginController as CustomerLoginController;
-use App\Http\Controllers\Auth\Customer\RegisterController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\Frontend\V1\ProductController as FrontendProductController;
+use App\Http\Controllers\Api\Frontend\V1\CustomerController as FrontendCustomerController;
 // authenticated user
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -72,6 +74,8 @@ Route::prefix('frontend/v1')->middleware(['throttle:api'])->group(function () {
     Route::get('/services', [HomeController::class, 'getServices']);
     Route::get('/custom-cakes', [HomeController::class, 'getCustomCakes']);
     Route::get('/custom-cake/show/{id}', [HomeController::class, 'showCustomCake']);
+    Route::post('/save-custom-cake-order', [OrderController::class, 'customCakeOrder']);
+
 
 
 
@@ -91,6 +95,9 @@ Route::prefix('frontend/v1')->middleware(['throttle:api'])->group(function () {
         // customer order
         Route::post('/save-order', [OrderController::class, 'store']);
         Route::get('/get-customer-order', [CustomerOrderController::class, 'customerOrders']);
+        Route::get('/custom-cake-orders', [CustomerOrderController::class, 'customCakeOrders']);
+
+
         Route::get('/order-detail/{id}', [CustomerOrderController::class, 'showCustomerOrder']);
     });
 
@@ -145,6 +152,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api', 'type.admin'])-
         'services' => CompanyServiceController::class,
         'custom-cakes' => CustomCakeController::class,
         'custom-cake-flavors' => CustomCakeFlavorController::class,
+        'custom-cake-orders' => CustomCakeOrderController::class,
     ]);
 
 
@@ -159,4 +167,15 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:api', 'type.admin'])-
 Route::get("/storage", function () {
     \Illuminate\Support\Facades\Artisan::call('storage:link');
     return "storage linked";
+});
+
+// download file api
+
+Route::get('/download/{file}', function ($file) {
+    $filePath = storage_path('app/public/photo_on_cakes/' . $file);
+
+    if (!file_exists($filePath)) {
+        return response()->json(['error' => 'File not found'], 404);
+    }
+    return Response::download($filePath);
 });

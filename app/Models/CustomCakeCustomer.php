@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class CustomCakeCustomer extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['full_name', 'phone_number', 'address'];
 }

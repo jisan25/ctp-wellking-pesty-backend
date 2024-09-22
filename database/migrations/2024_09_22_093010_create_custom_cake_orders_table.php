@@ -13,11 +13,14 @@ return new class extends Migration {
         Schema::create('custom_cake_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('custom_cake_id')->constrained('custom_cakes')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users');
             $table->foreignId('custom_cake_customer_id')->constrained('custom_cake_customers')->onDelete('cascade');
             $table->foreignId('custom_cake_flavor_id')->constrained('custom_cake_flavors')->onDelete('cascade');
-            $table->string('photo_on_cake')->nullable();
-            $table->string('message_on_cake')->nullable();
+            $table->text('photo_on_cake')->nullable();
+            $table->text('message_on_cake')->nullable();
             $table->string('weight'); // Adjust the precision as necessary
+            $table->string('delivery_location')->nullable();
+            $table->string('delivery_date')->nullable();
             $table->timestamps();
         });
     }
