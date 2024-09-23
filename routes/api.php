@@ -52,6 +52,7 @@ Route::prefix('frontend/v1')->middleware(['throttle:api'])->group(function () {
     Route::get('/categories', [HomeController::class, 'categories']);
     Route::get('/all-categories', [HomeController::class, 'allCategories']);
     Route::get('/filter-products', [HomeController::class, 'filterProducts']);
+    Route::get('/best-selling-product', [FrontendProductController::class, 'bestSelling']);
 
     // home products
     Route::apiResource('product', FrontendProductController::class);
@@ -75,8 +76,8 @@ Route::prefix('frontend/v1')->middleware(['throttle:api'])->group(function () {
     Route::get('/custom-cakes', [HomeController::class, 'getCustomCakes']);
     Route::get('/custom-cake/show/{id}', [HomeController::class, 'showCustomCake']);
     Route::post('/save-custom-cake-order', [OrderController::class, 'customCakeOrder']);
-
-
+    Route::post('/buy-now-order', [OrderController::class, 'buyNowOrder']);
+    Route::get('order-areas', [AddressController::class, 'getOrderAreas']);
 
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -84,7 +85,6 @@ Route::prefix('frontend/v1')->middleware(['throttle:api'])->group(function () {
         Route::get('/dashboard-data', [CustomerController::class, 'dashboardData']);
 
         // customer order area and address
-        Route::get('order-areas', [AddressController::class, 'getOrderAreas']);
         Route::post('save-shipping-address', [AddressController::class, 'store']);
         Route::get('my-shipping-address', [AddressController::class, 'index']);
         Route::get('/edit-my-shipping-address/{id}', [AddressController::class, 'store']);

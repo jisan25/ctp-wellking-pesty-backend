@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Order;
 use App\Models\Address;
 use App\Models\Product;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use App\Models\CustomCakeOrder;
 use App\Models\CustomCakeCustomer;
 use App\Http\Controllers\Controller;
+use App\Models\CustomCakeOrderImage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\AuthenticationException;
 
@@ -171,7 +173,6 @@ class OrderController extends Controller
             'message_on_cake' => 'nullable|string|max:255',
             'delivery_location' => 'required|string|max:100',
             'delivery_date' => 'required|string|max:50',
-            'photo_on_cake' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate imag
         ]);
 
         // Create the customer record if it does not exist
@@ -215,11 +216,67 @@ class OrderController extends Controller
         // Create the order record
         $order = CustomCakeOrder::create($orderData);
 
+        if ($request->hasFile('custom_cake_images')) {
+            foreach ($request->file('custom_cake_images') as $image) {
+                // Validate the file (optional but recommended)
+                $request->validate([
+                    'custom_cake_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', // You can adjust rules as per your requirements
+                ]);
+
+                // Store the image in the 'storage/app/custom_cake_images' directory
+                $imagePath = $image->store('custom_cake_images');
+
+                // Save image path and related data to the database
+                CustomCakeOrderImage::create([
+                    'custom_cake_order_id' => $order->id,
+                    'image' => $imagePath,
+                ]);
+            }
+        }
+
+
         // Return a response
         return response()->json(['success' => true, 'order' => $order], 201);
     }
 
+    public function buyNowOrder(Request $request)
+    {
+        // Validate the incoming request data
+        $request->validate([
+            'fullName' => 'required|string|max:255',
+            'phoneNumber' => 'required|string|max:15',
+            'address' => 'required|string',
+            'deliveryLocation' => 'required|string',
+            'areaId' => 'required',
+            'paymentMethod' => 'required|string',
+            'totalAmount' => 'required',
+        ]);
 
+        // Create a new user
+        $user = new User();
+        $user->name = $request->fullName;
+        $user->phone = $request->phoneNumber;
+        $user->address = $request->address; // Optional if you want to store this
+        $user->save();
+
+        // Create a new order associated with the user
+        $order = new Order();
+        $order->user_id = $user->id; // Associate order with newly created user
+        $order->shipping_area_id = $request->areaId; // Assuming this is a valid field
+        $order->sub_total = $request->totalAmount; // Subtotal
+        $order->grand_total = $request->totalAmount; // Total amount
+        $order->payment_method = $request->paymentMethod; // Payment method
+        $order->order_date = now(); // Set the order date to now
+        $order->payment_status = 'pending'; // Initial payment status
+        $order->order_status = 'pending'; // Initial order status
+
+        // Save the order
+        if ($order->save()) {
+            return response()->json(['success' => true, 'order' => $order], 201);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Unable to create order.'], 500);
+        }
+    }
 
 
 }

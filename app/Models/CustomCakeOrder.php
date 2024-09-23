@@ -31,6 +31,11 @@ class CustomCakeOrder extends Model
         return $this->belongsTo(CustomCakeFlavor::class);
     }
 
+    public function custom_cake_order_images()
+    {
+        return $this->hasMany(CustomCakeOrderImage::class);
+    }
+
 
 
 }

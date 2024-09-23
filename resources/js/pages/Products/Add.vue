@@ -375,60 +375,6 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          <div class="w-full">
-            <div class="p-2 bg-white border rounded-lg">
-              <h4 class="mb-3 text-sm">360 Images</h4>
-              <ul class="mb-2">
-                <li class="text-xs">999 KB limit.</li>
-                <li class="text-xs">
-                  Allowed types: <span class="text-primary"> JPG</span>,
-                  <span class="text-primary">JPEG</span>,
-                  <span class="text-primary">PNG</span>.
-                </li>
-              </ul>
-              <div class="file-upload-container">
-                <div class="file-upload-container-wrapper">
-                  <!--IMAGES PREVIEW-->
-                  <div
-                    v-for="(image, index) in form.images"
-                    class="file-upload-container-wrapper__preview"
-                    :key="image.index"
-                  >
-                    <img
-                      :src="image.url"
-                      class="file-upload-container-wrapper__preview-item"
-                    />
-                    <button
-                      @click="removeMedia(index)"
-                      class="file-upload-container-wrapper__preview-cancel"
-                      type="button"
-                    >
-                      <Icon name="material-symbols:close" class="text-white" />
-                    </button>
-                  </div>
-                  <!--UPLOAD BUTTON-->
-                  <div class="file-upload-container-wrapper__add">
-                    <label
-                      for="mu-file-input"
-                      class="file-upload-container__add-btn"
-                    >
-                      <span>
-                        <Icon name="tabler:cloud-upload" />
-                      </span>
-                    </label>
-                    <input
-                      @change="handleFileChange"
-                      id="mu-file-input"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      hidden
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
         <div class="w-1/2 px-2 mb-5">
           <label for="title" class="text-sm mb-1">Product Details</label>

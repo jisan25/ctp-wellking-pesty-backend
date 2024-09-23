@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\Category\CategoryShowResource;
 use App\Http\Resources\V1\Product\ProductListResource;
 use App\Http\Resources\V1\Product\ProductShowResource;
+use App\Models\OrderDetails;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
@@ -20,13 +21,36 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+
     public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
 
         $products = Product::query()
-            ->with(['category', 'brand'])
+            ->with(relations: ['category', 'brand'])
             ->where('title', 'like', '%' . $request->input('search') . '%')
             ->select(['id', 'title', 'price', 'cover_image'])
+            ->latest()
+            ->take(12)
+            ->get();
+
+        foreach ($products as $product) {
+            $product->key_features = json_decode($product->key_features);
+        }
+        return ProductListResource::collection($products);
+    }
+
+    public function bestSelling(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    {
+
+        $productIds = OrderDetails::query()->distinct()->pluck('product_id');
+
+
+
+        $products = Product::query()
+            ->with(relations: ['category', 'brand'])
+            ->whereIn('id', $productIds)
+            // ->select(['id', 'title', 'price', 'cover_image'])
             ->latest()
             ->take(12)
             ->get();

@@ -10,7 +10,7 @@ class CustomCakeOrderController extends Controller
 {
     public function index()
     {
-        $orders = CustomCakeOrder::with('custom_cake', 'custom_cake_customer', 'custom_cake_flavor')->orderBy('id', 'desc')->get();
+        $orders = CustomCakeOrder::with('custom_cake', 'custom_cake_customer', 'custom_cake_flavor', 'custom_cake_order_images')->orderBy('id', 'desc')->get();
         return response()->json($orders);
     }
 }
