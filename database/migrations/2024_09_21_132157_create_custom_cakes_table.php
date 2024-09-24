@@ -13,8 +13,9 @@ return new class extends Migration {
         Schema::create('custom_cakes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('image');
-            $table->string('price');
+            $table->string('image')->nullable();
+            $table->string('price')->nullable();
+            $table->string('type')->default('photo_cake');
             $table->timestamps();
         });
     }
