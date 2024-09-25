@@ -41,12 +41,12 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('frontend/v1')->middleware(['throttle:api'])->group(function () {
 
+    Route::get('/homedata', [HomeController::class, 'getHomeData']);
+
     // Frontend Route Customer Auth
     Route::post('/customer/login', [CustomerLoginController::class, 'login']);
     Route::post('/customer/register', [RegisterController::class, 'register']);
 
-    // get home sliders
-    Route::get('/sliders', [HomeController::class, 'getSliders']);
 
     // get product categories
     Route::get('/categories', [HomeController::class, 'categories']);

@@ -27,12 +27,32 @@ use App\Http\Controllers\Api\V1\BusinessSettingController;
 
 class HomeController extends Controller
 {
-
-    public function getSliders(): \Illuminate\Http\JsonResponse
+    public function getHomeData()
     {
+        $testimonials = Testimonial::take(10)->get();
+        $services = CompanyService::get();
         $sliders = Slider::query()->select('image')->latest('order_number')->get();
-        return response()->json($sliders);
+
+        $featuredCategoryProducts = Category::query()
+            ->where('status', 1)
+            ->with([
+                'products' => function ($query) {
+                    $query->select('id', 'title', 'cover_image', 'price', 'category_id', 'variant');
+                }
+            ])
+            ->select(['id', 'name'])
+            ->take(10)->get();
+
+        $data = [
+            'testimonials' => $testimonials,
+            'services' => $services,
+            'sliders' => $sliders,
+            'featuredCategoryProducts' => $featuredCategoryProducts
+        ];
+        return response()->json($data);
     }
+
+
 
     public function getSelectedCategoryProducts()
     {
